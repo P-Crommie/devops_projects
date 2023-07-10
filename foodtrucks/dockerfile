@@ -1,0 +1,31 @@
+FROM alpine:3.13.12 as builder
+
+WORKDIR /usr/src/foodtrucks
+
+RUN apk update \
+    && apk add --no-cache nodejs npm
+
+COPY ./project/flask-app/ .
+
+RUN rm -rf static \
+    && npm install \
+    && npm run build
+
+FROM alpine:3.13.12 as runner
+
+WORKDIR /usr/src/foodtrucks
+
+RUN apk update \
+    && apk add --no-cache python2-dev \
+    && python2 -m ensurepip --upgrade \
+    && pip install --no-cache-dir --upgrade pip setuptools wheel
+
+COPY --from=builder /usr/src/foodtrucks .
+
+RUN pip install -r requirements.txt
+
+EXPOSE 5000
+
+ENTRYPOINT [ "python" ]
+
+CMD [ "app.py"]
