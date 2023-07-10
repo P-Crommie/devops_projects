@@ -33,7 +33,7 @@ The `dockerfile` contains the instructions for building the Docker image. It sta
 
 The `entry-point.sh` script runs the Java application that optimizes images. It executes the application by specifying the classpath and the entry point JAR file. The input and output directories are provided as arguments to the application.
 
-The `init-image-optimizer.sh` script is responsible for running the Docker container and initiating the image optimization process. It checks the existence of the input and output directories, builds the Docker image, and creates a container with the directories mounted. The image optimization is performed within the container.
+The `init-image-optimizer.sh` script is responsible for running the Docker container and initiating the image optimization process. It takes an image name, checks the existence of the input and output directories, builds the Docker image, and creates a container with the directories mounted. The image optimization is performed within the container.
 
 # Installation
 

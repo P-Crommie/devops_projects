@@ -21,7 +21,7 @@ elif [[ -d "$in_dir" && -d "$out_dir" ]]; then
     echo "***************************************** PROCESSING BUILD ... *****************************************"
     echo
     echo "CREATING CONTAINER..."
-    docker run -d -v "$in_dir":/usr/src/optimizer/imgs/in -v "$out_dir":/usr/src/optimizer/imgs/out $image_name
+    docker run -d -v "$in_dir":/usr/src/optimizer/imgs/in -v "$out_dir":/usr/src/optimizer/imgs/out --rm $image_name
     echo
     
 else
