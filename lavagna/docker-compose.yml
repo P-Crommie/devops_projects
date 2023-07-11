@@ -1,0 +1,85 @@
+version: '3.9'
+services:
+
+  lavagna-db:
+    image: mysql:5.7
+    restart: always
+    container_name: lavagnaDB
+    expose:
+      - 3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - backend.net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "lavagna-db",
+          "-uroot",
+          "-p${MYSQL_ROOT_PASSWORD}"
+        ]
+      interval: 5s
+      timeout: 20s
+      retries: 5
+    volumes:
+      - data-db:/var/lib/mysql
+
+  lavagna:
+    image: lavagna
+    build: .
+    restart: always
+    container_name: lavagna
+    environment:
+      - DB_PASS=${MYSQL_PASSWORD}
+      - DB_URL=${DB_URL}
+    expose:
+      - 8080
+    networks:
+      - backend.net
+      - frontend.net
+    depends_on:
+      lavagna-db:
+        condition: service_healthy
+
+  proxy:
+    image: nginx:1.23.4-alpine
+    restart: always
+    container_name: lavagnaPROXY
+    expose:
+      - 80
+    networks:
+      - frontend.net
+    ports:
+      - 80:80
+    volumes:
+      - ./project/src/main/webapp:/usr/share/nginx/static
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - lavagna
+
+  documentation:
+    image: nginx:1.23.4-alpine
+    restart: on-failure
+    container_name: lavagnaDOCS
+    networks:
+      - frontend.net
+    expose:
+      - 8081
+    ports:
+      - 8081:80
+    volumes:
+      - ./project/help:/usr/share/nginx/html
+      - ./documentation/nginx.conf:/etc/nginx/nginx.conf:ro
+
+networks:
+  backend.net:
+  frontend.net:
+volumes:
+  data-db:
