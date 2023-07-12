@@ -1,0 +1,77 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:13-alpine
+    container_name: gutendexdb
+    restart: always
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend.net
+    volumes:
+      - gutendex-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  gutendex:
+    build: .
+    image: gutendex
+    container_name: gutendex
+    restart: always
+    expose:
+      - 8000
+    environment:
+      - GUTENDEX_PORT=${GUTENDEX_PORT}
+      - DATABASE_HOST=${DATABASE_HOST}
+      - DATABASE_NAME=${POSTGRES_DB}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_PORT=${DATABASE_PORT}
+      - DATABASE_USER=${POSTGRES_USER}
+      - GUTENDEX_HOSTNAME=${GUTENDEX_HOSTNAME}
+    networks:
+      - backend.net
+      - frontend.net
+    volumes:
+      - gutendexAppData:/usr/src/gutendex/catalog_files
+    depends_on:
+      db:
+        condition: service_healthy
+
+  proxy:
+    image: nginx:1.23.4-alpine
+    container_name: gutendexproxy
+    restart: always
+    expose:
+      - 80
+    ports:
+      - 80:80
+    networks:
+      - frontend.net
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./project/static:/usr/share/nginx/html/static
+    depends_on:
+      - gutendex
+
+networks:
+  backend.net:
+  frontend.net:
+
+
+volumes:
+  gutendex-data:
+  gutendexAppData:

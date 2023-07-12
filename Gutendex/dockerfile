@@ -1,0 +1,24 @@
+FROM python:3.8-alpine
+
+EXPOSE 8000
+WORKDIR /usr/src/gutendex
+
+COPY ./project/requirements.txt .
+RUN \
+    apk update && \
+    apk add --no-cache postgresql-libs && \
+    apk add --no-cache gcc rsync musl-dev && \
+    apk add --no-cache postgresql-dev=13.11-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main && \
+    pip3 install --upgrade pip && \
+    python3 -m pip install -r requirements.txt --no-cache-dir
+
+COPY project/manage.py .
+COPY project/gutendex/ ./gutendex
+COPY project/catalog_files/ ./catalog_files
+COPY project/books/ ./books
+COPY db_healthchecker.py .
+
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT [ "entrypoint.sh" ]
