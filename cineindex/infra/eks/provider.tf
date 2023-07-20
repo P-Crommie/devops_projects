@@ -35,6 +35,7 @@ provider "aws" {
       {
         workspace = "${terraform.workspace}"
         project   = "${var.project}"
+        env       = "${var.env}"
       },
     )
   }

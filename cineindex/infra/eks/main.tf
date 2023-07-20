@@ -1,41 +1,35 @@
 module "ekscluster" {
-  source                             = "./modules/eks"
-  project                            = var.project
-  scaling_config_desired_size        = var.scaling_config_desired_size
-  scaling_config_max_size            = var.scaling_config_max_size
-  scaling_config_min_size            = var.scaling_config_min_size
-  max_unavailable_nodes              = var.max_unavailable_nodes
-  cluster_version                    = var.cluster_version
-  ami-type                           = var.ami-type
-  capacity-type                      = var.capacity-type
-  disk-size                          = var.disk-size
-  cluster_allowed_cidr_blocks        = var.cluster_allowed_cidr_blocks
-  instance-type                      = var.instance-type
-  logs_retention_days                = var.logs_retention_days
-  eks_cluster_sg                     = module.network.eks_cluster_sg
-  eks_nodes_sg                       = module.network.eks_nodes_sg
-  node_role_arn                      = module.roles.node_role_arn
-  AmazonEKSWorkerNodePolicy          = module.roles.AmazonEKSWorkerNodePolicy
-  AmazonEKS_CNI_Policy               = module.roles.AmazonEKS_CNI_Policy
-  AmazonEC2ContainerRegistryReadOnly = module.roles.AmazonEC2ContainerRegistryReadOnly
-  cluster_role_arn                   = module.roles.cluster_role_arn
-  AmazonEKSClusterPolicy             = module.roles.AmazonEKSClusterPolicy
-  AmazonEKSVPCResourceController     = module.roles.AmazonEKSVPCResourceController
-  private_subnet_id                  = module.network.private_subnet_id
-  public_subnet_id                   = module.network.public_subnet_id
-  enable_controlplane_logging        = var.enable_controlplane_logging
+  source                          = "./modules/eks"
+  project                         = var.project
+  env                             = var.env
+  scaling_config_desired_size     = var.scaling_config_desired_size
+  scaling_config_max_size         = var.scaling_config_max_size
+  scaling_config_min_size         = var.scaling_config_min_size
+  max_unavailable_nodes           = var.max_unavailable_nodes
+  cluster_version                 = var.cluster_version
+  ami-type                        = var.ami-type
+  capacity-type                   = var.capacity-type
+  disk-size                       = var.disk-size
+  cluster_allowed_cidr_blocks     = var.cluster_allowed_cidr_blocks
+  instance-type                   = var.instance-type
+  logs_retention_days             = var.logs_retention_days
+  eks_cluster_sg                  = module.network.eks_cluster_sg
+  eks_nodes_sg                    = module.network.eks_nodes_sg
+  private_subnet_id               = module.network.private_subnet_id
+  public_subnet_id                = module.network.public_subnet_id
+  enable_controlplane_logging     = var.enable_controlplane_logging
+  node_iam_policies               = var.node_iam_policies
+  cluster_iam_policies            = var.cluster_iam_policies
+  cluster_endpoint_private_access = var.cluster_endpoint_private_access
+  cluster_endpoint_public_access  = var.cluster_endpoint_public_access
 }
 
 module "network" {
   source           = "./modules/network"
   project          = var.project
+  env              = var.env
   vpc_cidr         = var.vpc_cidr
   subnet_cidr_bits = var.subnet_cidr_bits
-}
-
-module "roles" {
-  source  = "./modules/roles"
-  project = var.project
 }
 
 data "aws_eks_cluster" "cluster" {

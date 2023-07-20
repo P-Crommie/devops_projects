@@ -1,8 +1,8 @@
 # Creating the Worker Node
 resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
-  node_group_name = "${var.project}-NodeGroup"
-  node_role_arn   = var.node_role_arn
+  node_group_name = "${var.env}-${var.project}-NodeGroup"
+  node_role_arn   = aws_iam_role.node_role.arn
   subnet_ids      = var.private_subnet_id
 
   scaling_config {
@@ -20,9 +20,5 @@ resource "aws_eks_node_group" "this" {
   disk_size      = var.disk-size
   instance_types = [var.instance-type]
 
-  depends_on = [
-    var.AmazonEKSWorkerNodePolicy,
-    var.AmazonEKS_CNI_Policy,
-    var.AmazonEC2ContainerRegistryReadOnly,
-  ]
+  depends_on = [aws_iam_role_policy_attachment.nodePolicy]
 }

@@ -12,3 +12,7 @@ variable "project" {
   description = "Name of the project deployment."
   type        = string
 }
+
+variable "env" {
+  type = string
+}

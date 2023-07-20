@@ -52,30 +52,32 @@ variable "cluster_allowed_cidr_blocks" {
   type        = list(any)
 }
 
-variable "node_role_arn" {
-  description = "Node arn"
-}
-
-variable "AmazonEKSWorkerNodePolicy" {
-  description = "This policy allows Amazon EKS worker nodes to connect to Amazon EKS Clusters"
-}
-
-variable "AmazonEC2ContainerRegistryReadOnly" {
-  description = "Provides read-only access to Amazon EC2 Container Registry repositories"
-}
-
-variable "cluster_role_arn" {}
-
-variable "AmazonEKSClusterPolicy" {}
-
-variable "AmazonEKSVPCResourceController" {}
-
 variable "private_subnet_id" {}
 
 variable "public_subnet_id" {}
 
-variable "AmazonEKS_CNI_Policy" {}
-
 variable "eks_cluster_sg" {}
 
 variable "eks_nodes_sg" {}
+
+variable "node_iam_policies" {
+  description = "List of IAM policies to attach to EKS nodes"
+  type        = map(any)
+}
+
+variable "cluster_iam_policies" {
+  description = "List of IAM policies to attach to EKS cluster"
+  type        = map(any)
+}
+
+variable "cluster_endpoint_private_access" {
+  type = bool
+}
+
+variable "cluster_endpoint_public_access" {
+  type = bool
+}
+
+variable "env" {
+  type = string
+}

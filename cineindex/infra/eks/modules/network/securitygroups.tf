@@ -1,6 +1,6 @@
 # EKS Cluster Security Group
 resource "aws_security_group" "eks_cluster" {
-  name        = "${var.project}-cluster-SG"
+  name        = "${var.env}-${var.project}-cluster-SG"
   description = "Cluster communication with worker nodes"
   vpc_id      = aws_vpc.this.id
 
@@ -18,13 +18,13 @@ resource "aws_security_group" "eks_cluster" {
     to_port     = 65535
   }
   tags = {
-    Name = "${var.project}-cluster-SG"
+    Name = "${var.env}-${var.project}-cluster-SG"
   }
 }
 
 # EKS Node Security Group
 resource "aws_security_group" "eks_nodes" {
-  name        = "${var.project}-node-SG"
+  name        = "${var.env}-${var.project}-node-SG"
   description = "Security group for all nodes in the cluster"
   vpc_id      = aws_vpc.this.id
 
@@ -50,6 +50,6 @@ resource "aws_security_group" "eks_nodes" {
   }
 
   tags = {
-    Name = "${var.project}-node-SG"
+    Name = "${var.env}-${var.project}-node-SG"
   }
 }

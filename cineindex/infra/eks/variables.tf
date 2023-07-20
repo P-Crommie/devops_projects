@@ -1,7 +1,11 @@
 variable "project" {
   description = "Name to be used on all the resources as identifier. e.g. Project name, Application name"
   type        = string
-  default     = "cineindex"
+  default     = "sowpackage"
+}
+
+variable "env" {
+  type = string
 }
 
 variable "project_region" {
@@ -79,9 +83,8 @@ variable "tags" {
   description = "A map of tags to add to all resources"
   type        = map(string)
   default = {
-    owner     = "crommie"
+    owner     = "cromwell"
     terraform = "true"
-    env       = "dev"
   }
 }
 
@@ -93,4 +96,33 @@ variable "enable_controlplane_logging" {
 variable "logs_retention_days" {
   type    = number
   default = 30
+}
+
+variable "node_iam_policies" {
+  description = "List of IAM policies to attach to EKS nodes"
+  type        = map(any)
+  default = {
+    1 = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+    2 = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+    3 = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  }
+}
+
+variable "cluster_iam_policies" {
+  description = "List of IAM policies to attach to EKS cluster"
+  type        = map(any)
+  default = {
+    1 = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+    2 = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+  }
+}
+
+variable "cluster_endpoint_private_access" {
+  type    = bool
+  default = true
+}
+
+variable "cluster_endpoint_public_access" {
+  type    = bool
+  default = true
 }
