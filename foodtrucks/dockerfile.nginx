@@ -1,0 +1,13 @@
+FROM node:18-alpine3.17 as builder
+
+WORKDIR /app
+
+COPY ./project/flask-app/ ./
+
+RUN npm install && \
+    npm run build
+
+FROM nginx:alpine3.17 as runner
+
+COPY --from=builder /app/static /usr/share/nginx/static
+COPY --from=builder /app/templates /etc/nginx/templates

@@ -3,28 +3,29 @@ FROM maven:3.6.3-openjdk-8 as builder
 WORKDIR /usr/src/lavagna
 
 COPY project/ .
-COPY entrypoint.sh .
+
 RUN mvn verify
 
 FROM openjdk:8-jre-alpine as runner
 
 WORKDIR /usr/src/lavagna
+
 EXPOSE 8080
 
-# Install the MySQL client
 RUN apk update && \
     apk add --no-cache mysql-client
 
-COPY --from=builder /usr/src/lavagna/entrypoint.sh /usr/local/bin/
+COPY entrypoint.sh /usr/local/bin/
+
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 COPY --from=builder /usr/src/lavagna/target/lavagna-jetty-console.war .
-# Use local file as database - who cares
-ENV DB_DIALECT MYSQL
-ENV DB_URL jdbc:mysql://lavagna-db:3306/lavagna?autoReconnect=true&useSSL=false
-ENV DB_USER admin
+
+ENV DB_DIALECT ""
+ENV DB_URL ""
+ENV DB_USER ""
 ENV DB_PASS ""
-ENV DB_HOST lavagna-db
-ENV SPRING_PROFILE dev
+ENV DB_HOST ""
+ENV SPRING_PROFILE ""
 
 ENTRYPOINT [ "entrypoint.sh" ]

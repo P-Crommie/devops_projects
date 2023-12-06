@@ -1,0 +1,12 @@
+FROM maven:3.6.3-openjdk-8 as builder
+
+WORKDIR /usr/src/lavagna
+
+COPY project/ .
+
+RUN mvn clean stampo:build
+
+FROM nginx:1.23.4-alpine as runner
+
+COPY --from=builder /usr/src/lavagna/target/lavagna/help /usr/share/nginx/html
+COPY --from=builder /usr/src/lavagna/src/main/webapp /usr/share/nginx/static

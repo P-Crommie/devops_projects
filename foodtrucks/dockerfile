@@ -1,31 +1,35 @@
-FROM alpine:3.13.12 as builder
+FROM alpine:3.11 as builder
 
-WORKDIR /usr/src/foodtrucks
+WORKDIR /app
 
-RUN apk update \
-    && apk add --no-cache nodejs npm
+RUN apk update && \
+    apk add --no-cache python2 curl && \
+    curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py && \
+    python2 get-pip.py && \
+    pip install virtualenv && \
+    virtualenv /app/venv
 
-COPY ./project/flask-app/ .
 
-RUN rm -rf static \
-    && npm install \
-    && npm run build
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-FROM alpine:3.13.12 as runner
-
-WORKDIR /usr/src/foodtrucks
-
-RUN apk update \
-    && apk add --no-cache python2-dev \
-    && python2 -m ensurepip --upgrade \
-    && pip install --no-cache-dir --upgrade pip setuptools wheel
-
-COPY --from=builder /usr/src/foodtrucks .
+COPY ./project/flask-app/requirements.txt ./project/flask-app/app.py ./
 
 RUN pip install -r requirements.txt
 
+FROM alpine:3.11 as runner
+
+WORKDIR /usr/src/foodtrucks
+
+RUN apk update && \
+    apk add --no-cache python2 
+
+COPY --from=builder /app/venv venv
+COPY --from=builder /app/app.py ./
+
+ENV VIRTUAL_ENV=/usr/src/foodtrucks/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 EXPOSE 5000
 
-ENTRYPOINT [ "python" ]
-
-CMD [ "app.py"]
+ENTRYPOINT [ "python", "app.py"]

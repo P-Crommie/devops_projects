@@ -44,11 +44,11 @@ services:
         condition: service_healthy
 
   proxy:
+    build:
+      dockerfile: dockerfile.nginx
     image: nginx:alpine3.17
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./project/flask-app/static:/usr/share/nginx/static
-      - ./project/flask-app/templates:/etc/nginx/templates
     expose:
       - 80
     networks:
