@@ -4,22 +4,10 @@ WORKDIR /usr/src/lavagna
 
 COPY project/ .
 
-RUN mvn verify
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn verify
 
 FROM openjdk:8-jre-alpine as runner
-
-WORKDIR /usr/src/lavagna
-
-EXPOSE 8080
-
-RUN apk update && \
-    apk add --no-cache mysql-client
-
-COPY entrypoint.sh /usr/local/bin/
-
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-COPY --from=builder /usr/src/lavagna/target/lavagna-jetty-console.war .
 
 ENV DB_DIALECT ""
 ENV DB_URL ""
@@ -27,5 +15,17 @@ ENV DB_USER ""
 ENV DB_PASS ""
 ENV DB_HOST ""
 ENV SPRING_PROFILE ""
+
+WORKDIR /usr/src/lavagna
+
+RUN apk update && \
+    apk add --no-cache mysql-client
+
+COPY --from=builder /usr/src/lavagna/target/lavagna-jetty-console.war .   
+COPY entrypoint.sh /usr/local/bin/
+
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 8080
 
 ENTRYPOINT [ "entrypoint.sh" ]

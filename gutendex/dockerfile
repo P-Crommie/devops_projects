@@ -1,24 +1,38 @@
-FROM python:3.8-alpine
+FROM python:3.9-slim as builder
 
-EXPOSE 8000
+WORKDIR /app
+
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential python3-dev libpq-dev && \
+    pip install --upgrade pip && \
+    python3 -m venv venv
+
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY ./project .
+
+RUN pip install -r requirements.txt
+
+FROM python:3.9-slim as runner
+
 WORKDIR /usr/src/gutendex
 
-COPY ./project/requirements.txt .
-RUN \
-    apk update && \
-    apk add --no-cache postgresql-libs && \
-    apk add --no-cache gcc rsync musl-dev && \
-    apk add --no-cache postgresql-dev=13.11-r0 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main && \
-    pip3 install --upgrade pip && \
-    python3 -m pip install -r requirements.txt --no-cache-dir
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    rsync python3-dev libpq-dev build-essential && \
+    pip install --upgrade pip
 
-COPY project/manage.py .
-COPY project/gutendex/ ./gutendex
-COPY project/catalog_files/ ./catalog_files
-COPY project/books/ ./books
+COPY --from=builder /app/venv venv
+COPY --from=builder /app/manage.py .
+COPY --from=builder /app/gutendex/ ./gutendex
+COPY --from=builder /app/catalog_files/ ./catalog_files
+COPY --from=builder /app/books/ ./books
 COPY db_healthchecker.py .
-
 COPY entrypoint.sh /usr/local/bin/
+
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+ENV VIRTUAL_ENV=/usr/src/gutendex/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ENTRYPOINT [ "entrypoint.sh" ]
